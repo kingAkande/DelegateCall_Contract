@@ -1,34 +1,46 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
 
-contract Lock {
-    uint public unlockTime;
-    address payable public owner;
 
-    event Withdrawal(uint amount, uint when);
+contract ToBeCalled {
 
-    constructor(uint _unlockTime) payable {
-        require(
-            block.timestamp < _unlockTime,
-            "Unlock time should be in the future"
-        );
+    uint public  num;
+    address public  sender;
+    uint public value;
 
-        unlockTime = _unlockTime;
-        owner = payable(msg.sender);
-    }
 
-    function withdraw() public {
-        // Uncomment this line, and the import of "hardhat/console.sol", to print a log in your terminal
-        // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
 
-        require(block.timestamp >= unlockTime, "You can't withdraw yet");
-        require(msg.sender == owner, "You aren't the owner");
+    function setA(uint _num)external payable  {
 
-        emit Withdrawal(address(this).balance, block.timestamp);
+                num =3*_num;
 
-        owner.transfer(address(this).balance);
+                sender = msg.sender;
+
+                value = msg.value;          
     }
 }
+
+
+
+contract DelegateCall{
+
+    uint public  num;
+    address public  sender;
+    uint public value;
+
+
+
+    function setA(address _toBeCalled, uint _num)external payable {
+
+           (bool success, bytes memory data ) = _toBeCalled.delegatecall( 
+            
+            abi.encodeWithSelector( ToBeCalled .setA.selector,_num)
+            
+            );
+            
+            require(success, "delegatecall failed");
+    }
+
+}
+
